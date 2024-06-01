@@ -50,3 +50,25 @@ def callback():
         return redirect('/home')
 
     return 'Error: No code in request'
+
+
+@app.route("/refresh_token")
+def refresh_token():
+    if 'refresh_token' not in session:
+        return redirect('/login')
+
+    if datetime.now().timestamp() > session['expires_at']:
+        req_body = {
+            'grant_type': 'refresh_token',
+            'refresh_token': session['refresh_token'],
+            'client_id': SPOTIFY_CLIENT_ID,
+            'client_secret': SPOTIFY_CLIENT_SECRET
+        }
+
+        response = requests.post(TOKEN_URL, data=req_body)
+        new_token_info = response.json()
+
+        session['access_token'] = new_token_info['access_token']
+        session['expires_at'] = datetime.now().timestamp() + new_token_info['expires_in']
+
+        return redirect('/home')
