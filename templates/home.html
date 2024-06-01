@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spotify Recommendation Tweaks</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/home.js"></script>
+</head>
+<body>
+    <div class="top-header">
+        <nav>
+            <ul>
+
+            </ul>
+        </nav>
+    </div>
+    <div class="container">
+        <header>
+            <h1>Spotify Recommendations Tweaks</h1>
+        </header>
+        <form id="recommendationsForm">
+            <label for="min_energy">Min Energy:</label>
+            <input type="number" id="min_energy" name="min_energy" min="0" max="1" step="0.01" value="0.4"><br>
+
+            <label for="max_energy">Max Energy:</label>
+            <input type="number" id="max_energy" name="max_energy" min="0" max="1" step="0.01" value="0.8"><br>
+
+            <label for="target_popularity">Target Popularity:</label>
+            <input type="number" id="target_popularity" name="target_popularity" min="0" max="100" step="1"><br>
+
+            <label for="target_acousticness">Target Acousticness:</label>
+            <input type="number" id="target_acousticness" name="target_acousticness" min="0" max="1" step="0.01" value="0.5"><br>
+
+            <label for="target_instrumentalness">Target Instrumentalness:</label>
+            <input type="number" id="target_instrumentalness" name="target_instrumentalness" min="0" max="1" step="0.01" value="0.5"><br>
+
+            <label for="target_tempo">Target Tempo:</label>
+            <input type="number" id="target_tempo" name="target_tempo" min="0" step="1" value="120"><br>
+
+            <button type="button" onclick="getRecommendations()">Get Recommendations</button>
+        </form>
+
+        <h2>Recommendations</h2>
+        <div id="recommendationsOutput"></div>
+        <button type="button" id="addPlaylistButton" onclick="addPlaylist()" style="display: none;">Add as Playlist</button>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Spotify Recommendations</p>
+    </footer>
+
+    <script>
+        let recommendations = [];
+
+        function getRecommendations() {
+            const form = document.getElementById('recommendationsForm');
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            const url = `/recommendations?${queryString}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    recommendations = data.tracks || [];
+                    displayRecommendations(recommendations);
+                    document.getElementById('addPlaylistButton').style.display = recommendations.length > 0 ? 'block' : 'none';
+                })
+                .catch(error => {
+                    console.error('Error fetching recommendations:', error);
+                });
+        }
+
+        function displayRecommendations(tracks) {
+            const output = document.getElementById('recommendationsOutput');
+            output.innerHTML = '';
+            if (tracks.length > 0) {
+                tracks.forEach((track, index) => {
+                    const trackInfo = document.createElement('div');
+                    trackInfo.classList.add('track-info');
+                    trackInfo.innerHTML = `
+                        <p><strong>${index + 1}. ${track.name}</strong></p>
+                        <p>Artist: ${track.artists.map(artist => artist.name).join(', ')}</p>
+                        <p>Album: ${track.album.name} (${new Date(track.album.release_date).getFullYear()})</p>
+                    `;
+                    output.appendChild(trackInfo);
+                });
+            } else {
+                output.innerHTML = '<p>No recommendations found.</p>';
+            }
+        }
+
+        function addPlaylist() {
+            fetch('/create_playlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tracks: recommendations })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Playlist created successfully!');
+            })
+            .catch(error => {
+                console.error('Error creating playlist:', error);
+            });
+        }
+    </script>
+</body>
+</html>

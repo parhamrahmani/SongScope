@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SongScope - TEST</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/welcome.js') }}" defer></script>
+</head>
+<body>
+    <header class="top-header">
+        <nav>
+            <ul>
+                <li><a href="/docs">Documentation</a></li>
+                <li><a href="/diagram">Diagrams</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <header>
+            <h1>Welcome to SongScope</h1>
+            <p>Your ultimate music companion</p>
+        </header>
+        <main>
+            <button id="authorize">Authorize with Spotify</button>
+        </main>
+        <footer>
+            <p>&copy; 2024 SongScope. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
