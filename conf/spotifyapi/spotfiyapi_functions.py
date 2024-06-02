@@ -4,8 +4,8 @@ from datetime import datetime
 import requests
 import json
 import random
-from conf.jsontools.tools import extract_song_info
-from conf.chromadb.functions import add_to_liked_songs
+from conf.jsontools.tools import extract_song_info_into_one_text
+from conf.chromadb.chroma_setup import add_to_liked_songs
 
 
 @app.route("/playlists")
@@ -36,6 +36,7 @@ def get_liked_songs(return_data=False):
     }
 
     all_tracks = []
+    formatted_songs = []
     url = f"{API_BASE_URL}me/tracks?limit=20"
 
     while url:
@@ -49,12 +50,14 @@ def get_liked_songs(return_data=False):
         url = data.get('next')
 
     # Extract and format the desired fields
-    formatted_songs = [extract_song_info(song) for song in all_tracks]
+    # formatted_songs = [extract_song_info(song) for song in all_tracks]
+    for song in all_tracks:
+        song_id, song_info = extract_song_info_into_one_text(song)
+        add_to_liked_songs(song_id, song_info) # add to chroma db
+        string = f"Song ID: {song_id}  Song Info: {song_info}"
+        formatted_songs.append(string)
 
-    # Add the songs to the liked songs collection
-    add_to_liked_songs(formatted_songs)
-
-    return jsonify(formatted_songs)
+    return formatted_songs
 
 
 @app.route("/top_tracks")
