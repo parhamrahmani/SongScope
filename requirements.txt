@@ -5,3 +5,4 @@ jsonify~=0.5
 openai~=1.30.5
 pydantic~=2.7.2
 chromadb~=0.5.0
+pymongo~=4.7.3
