@@ -3,7 +3,10 @@ from urllib.parse import urlencode
 import requests
 from flask import request, redirect, session
 from conf import *
-
+import conf.spotifyapi.spotfiyapi_functions
+import openai
+import conf.spotifyapi.spotifyauth
+from flask import Flask, request, redirect, session
 
 @app.route('/login')
 def login():

@@ -1,13 +1,21 @@
+from pymongo import MongoClient
+
 from conf import app
 from flask import redirect, request, session, Response, jsonify
 from datetime import datetime
 import requests
 import json
 import random
-from conf.jsontools.tools import extract_song_info_into_one_text
-from conf.chromadb.chroma_setup import add_to_liked_songs
+from conf.jsontools.tools import *
+from conf.jsontools.json_loader import load_data
+from conf.mongodb.setup import *
+from conf.jsontools.tools import *
+from conf.mongodb.insertion import *
 
-#push
+MONGODB_CLIENT = MongoClient("mongodb://localhost:27017/")
+DB_NAME = "spotifydb"
+
+
 @app.route("/playlists")
 def get_playlists():
     if 'access_token' not in session:
@@ -36,7 +44,6 @@ def get_liked_songs(return_data=False):
     }
 
     all_tracks = []
-    formatted_songs = []
     url = f"{API_BASE_URL}me/tracks?limit=20"
 
     while url:
@@ -49,15 +56,18 @@ def get_liked_songs(return_data=False):
         all_tracks.extend(data.get('items'))
         url = data.get('next')
 
-    # Extract and format the desired fields
-    # formatted_songs = [extract_song_info(song) for song in all_tracks]
-    for song in all_tracks:
-        song_id, song_info = extract_song_info_into_one_text(song)
-        add_to_liked_songs(song_id, song_info) # add to chroma db
-        string = f"Song ID: {song_id}  Song Info: {song_info}"
-        formatted_songs.append(string)
+    # put the data into a temp json file
+    with open('example_json_files/temp.json', 'w') as file:
+        json.dump(all_tracks, file)
 
-    return formatted_songs
+    data = load_data('example_json_files/temp.json')
+    liked_songs_json = extract_and_transform_liked_songs(data)
+    tracks_json, albums_json, artists_json = extract_and_transform_tracks(liked_songs_json)
+    insert_tracks(MONGODB_CLIENT, DB_NAME, tracks_json)
+    insert_albums(MONGODB_CLIENT, DB_NAME, albums_json)
+    insert_artists(MONGODB_CLIENT, DB_NAME, artists_json)
+
+    return all_tracks
 
 
 @app.route("/top_tracks")
@@ -88,29 +98,23 @@ def get_recommendations():
         return redirect('/login')
     if datetime.now().timestamp() > session.get('expires_at', 0):
         return redirect('/refresh_token')
-
     headers = {
         'Authorization': f'Bearer {session["access_token"]}'
     }
-
     # Retrieve top tracks to use as seeds
     top_tracks_response = requests.get(f"{API_BASE_URL}me/top/tracks?limit=5&time_range=short_term", headers=headers)
-
     if top_tracks_response.status_code != 200:
         return Response(top_tracks_response.content, status=top_tracks_response.status_code,
                         mimetype='application/json')
-
     top_tracks_data = top_tracks_response.json()
     seed_tracks = ','.join([track['id'] for track in top_tracks_data['items']])
-
     # Get parameters from the request in webpage form
-    min_energy = request.args.get('min_energy', 0.4)
-    max_energy = request.args.get('max_energy', 0.8)
-    target_popularity = request.args.get('target_popularity', random.randint(1, 100))
-    target_acousticness = request.args.get('target_acousticness', 0.5)
-    target_instrumentalness = request.args.get('target_instrumentalness', 0.5)
-    target_tempo = request.args.get('target_tempo', 120)
-
+    min_energy = float(request.args.get('min_energy', 0.4))
+    max_energy = float(request.args.get('max_energy', 0.8))
+    target_popularity = int(request.args.get('target_popularity', random.randint(1, 100)))
+    target_acousticness = float(request.args.get('target_acousticness', 0.5))
+    target_instrumentalness = float(request.args.get('target_instrumentalness', 0.5))
+    target_tempo = float(request.args.get('target_tempo', 120))
     # Define additional parameters for recommendations, if necessary
     params = {
         'seed_tracks': seed_tracks,
@@ -123,27 +127,25 @@ def get_recommendations():
         'target_instrumentalness': target_instrumentalness,
         'target_tempo': target_tempo
     }
-
     # Remove empty parameters
     params = {k: v for k, v in params.items() if v}
-
     # Debugging logs
     print(f"Parameters received: {params}")
-
     # Construct the request URL
     url = f"{API_BASE_URL}recommendations"
     print(f"Request URL: {url}")
     print(f"Request Params: {params}")
-
     # Fetch recommendations based on the seeds
     recommendations_response = requests.get(
         url,
         headers={'Authorization': f'Bearer {session["access_token"]}'},
         params=params
     )
-
     if recommendations_response.status_code == 200:
-        return Response(recommendations_response.content, mimetype='application/json')
+        recommendations_data = recommendations_response.json()
+        enriched_data = extract_recommendations_with_weights(recommendations_data, params)
+        insert_recommendation(MONGODB_CLIENT, DB_NAME, enriched_data)
+        return Response(json.dumps(enriched_data), mimetype='application/json')
     else:
         print(f"Error from Spotify API: {recommendations_response.content}")
         return Response(recommendations_response.content, status=recommendations_response.status_code,
