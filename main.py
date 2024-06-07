@@ -1,9 +1,5 @@
-from flask import Flask, request, redirect, session
 from flask import redirect, session, render_template
 from conf import *
-import conf.spotifyapi.spotifyauth
-import conf.spotifyapi.spotfiyapi_functions
-import openai
 from pydantic import BaseModel
 
 
