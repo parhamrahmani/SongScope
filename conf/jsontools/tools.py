@@ -1,48 +1,86 @@
 import json
 
-def extract_song_info_into_one_text(song):
-    track = song['track']
-    album = track['album']
 
-    # get the song id
-    song_id = track['id']
-    # get the song title
-    song_title = track['name']
-    # get the artist name
-    artist_name = ', '.join([artist['name'].lower().strip() for artist in track['artists']])
-    # get the album name
-    album_name = album['name']
-    # get the release date
-    release_date = album['release_date'].split('-')[0]
+def extract_and_transform_liked_songs(data):
+    print("Starting to extract and transform liked songs data.")
+    if isinstance(data, list):
+        items = data
+    else:
+        items = data.get("items", [])
 
-    output = f"Title: {song_title} Artist: {artist_name} Album: {album_name} Release Date: {release_date}"
+    liked_songs = []
 
-    return song_id, output
+    for item in items:
+        track = item.get("track", {})
+        album = track.get("album", {})
 
+        track_info = {
+            "album": {
+                "album_type": album.get("album_type", ""),
+                "total_tracks": album.get("total_tracks", 0),
+                "available_markets": album.get("available_markets", []),
+                "external_urls": album.get("external_urls", {}),
+                "href": album.get("href", ""),
+                "id": album.get("id", ""),
+                "images": album.get("images", []),
+                "name": album.get("name", ""),
+                "release_date": album.get("release_date", ""),
+                "release_date_precision": album.get("release_date_precision", ""),
+                "type": album.get("type", ""),
+                "uri": album.get("uri", ""),
+                "artists": [
+                    {
+                        "external_urls": artist.get("external_urls", {}),
+                        "href": artist.get("href", ""),
+                        "id": artist.get("id", ""),
+                        "name": artist.get("name", ""),
+                        "type": artist.get("type", ""),
+                        "uri": artist.get("uri", "")
+                    } for artist in album.get("artists", [])
+                ]
+            },
+            "artists": [
+                {
+                    "external_urls": artist.get("external_urls", {}),
+                    "href": artist.get("href", ""),
+                    "id": artist.get("id", ""),
+                    "name": artist.get("name", ""),
+                    "type": artist.get("type", ""),
+                    "uri": artist.get("uri", "")
+                } for artist in track.get("artists", [])
+            ],
+            "available_markets": track.get("available_markets", []),
+            "disc_number": track.get("disc_number", 0),
+            "duration_ms": track.get("duration_ms", 0),
+            "explicit": track.get("explicit", False),
+            "external_ids": track.get("external_ids", {}),
+            "external_urls": track.get("external_urls", {}),
+            "href": track.get("href", ""),
+            "id": track.get("id", ""),
+            "name": track.get("name", ""),
+            "popularity": track.get("popularity", 0),
+            "preview_url": track.get("preview_url", ""),
+            "track_number": track.get("track_number", 0),
+            "type": track.get("type", ""),
+            "uri": track.get("uri", ""),
+            "is_local": track.get("is_local", False)
+        }
+        liked_songs.append(track_info)
 
-def extract_and_insert_tracks(data, liked_songs_collection):
-    tracks = data.get("tracks", [])
-    for track in tracks:
-        liked_songs_collection.insert_one(track)
-    print("Inserted tracks successfully.")
+    print(f"Extracted and transformed {len(liked_songs)} liked songs.")
+    return liked_songs
 
 
 def extract_and_transform_tracks(data):
-    if "tracks" in data:
-        tracks = data["tracks"]
-    else:
-        tracks = [data]
+    print("Starting to extract and transform tracks data.")
+    tracks_data = data if isinstance(data, list) else data.get("items", [])
 
     transformed_tracks = []
     transformed_albums = []
     transformed_artists = []
 
-    for track in tracks:
-        # Extract genres from artists
-        genres = []
-        for artist in track["artists"]:
-            # Simulate extracting genres for the example (assuming each artist has a 'genres' field)
-            genres.extend(artist.get("genres", []))
+    for item in tracks_data:
+        track = item.get("track", item)  # Handle both track objects directly and items containing track objects
 
         # Extract track information
         track_info = {
@@ -57,9 +95,10 @@ def extract_and_transform_tracks(data):
             "uri": track["uri"],
             "release_date": track["album"]["release_date"],
             "popularity": track.get("popularity", 0),
-            "genres": genres
         }
         transformed_tracks.append(track_info)
+
+        print(f"Processed track: {track_info['name']}")
 
         # Extract album information
         album_info = {
@@ -92,4 +131,65 @@ def extract_and_transform_tracks(data):
     albums_json = json.dumps(transformed_albums, indent=4)
     artists_json = json.dumps(transformed_artists, indent=4)
 
+    print(
+        f"Extracted and transformed {len(transformed_tracks)} tracks, {len(transformed_albums)} albums, and {len(transformed_artists)} artists.")
     return tracks_json, albums_json, artists_json
+
+
+def extract_and_transform_playlists(data):
+    print("Starting to extract and transform playlists data.")
+    playlist_info = {
+        "description": data.get("description", ""),
+        "playlist_id": data.get("id", ""),
+        "external_urls": data.get("external_urls", {}),
+        "href": data.get("href", ""),
+        "owner": data.get("owner", {}).get("display_name", ""),
+        "tracks": []
+    }
+
+    for item in data.get("tracks", {}).get("items", []):
+        track = item.get("track", {})
+        album = track.get("album", {})
+
+        track_info = {
+            "track_name": track.get("name", ""),
+            "track_id": track.get("id", ""),
+            "album": {
+                "name": album.get("name", ""),
+                "release_date": album.get("release_date", ""),
+                "uri": album.get("uri", "")
+            },
+            "uri": track.get("uri", "")
+        }
+        playlist_info["tracks"].append(track_info)
+
+    print(f"Extracted and transformed {len(playlist_info['tracks'])} tracks in playlist.")
+    # Convert to JSON string
+    playlist_json = json.dumps(playlist_info, indent=4)
+
+    return playlist_json
+
+
+def extract_recommendations_with_weights(recommendations_data, weights):
+    enriched_tracks = []
+    for track in recommendations_data['tracks']:
+        enriched_track = {
+            "album": track["album"]["name"],
+            "artists": [artist["name"] for artist in track["artists"]],
+            "duration_ms": track["duration_ms"],
+            "external_urls": track["external_urls"],
+            "href": track["href"],
+            "id": track["id"],
+            "name": track["name"],
+            "popularity": track["popularity"],
+            "preview_url": track["preview_url"],
+            "uri": track["uri"],
+            "disc_number": track.get("disc_number", 0),
+            "explicit": track.get("explicit", False),
+            "external_ids": track.get("external_ids", {}),
+            "is_local": track.get("is_local", False),
+            "is_playable": track.get("is_playable", True)
+        }
+        enriched_track.update(weights)  # Add each weight as a separate field in the track info
+        enriched_tracks.append(enriched_track)
+    return enriched_tracks
