@@ -2,6 +2,7 @@ from flask import Flask
 import os
 from dotenv import load_dotenv
 import chromadb
+from pymongo import MongoClient
 
 # load environment variables
 load_dotenv()
@@ -23,3 +24,7 @@ OPEN_AI_API_KEY = os.getenv('OPEN_AI_API_KEY')
 OPEN_AI_ASSISTANT_ID = os.getenv('OPEN_AI_ASSISTANT_ID')
 AI_MODEL = os.getenv('AI_MODEL')
 CHROMA_DB_PATH = os.getenv('CHROMADB_PATH')
+
+MONGODB_CLIENT = MongoClient("mongodb://localhost:27017/")
+DB_NAME = "spotifydb"
+COLLECTIONS = ["liked_songs", "albums", "artists", "playlists", "recommendations"]
