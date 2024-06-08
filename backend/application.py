@@ -37,7 +37,7 @@ def chat():
 
         if not user_input:
             return jsonify({"error": "No text provided"}), 400
-        input = {'artist_name': 'Pink Floyd'}
+        input = {'artist_name': 'Sia'}
         prompt = user_input
         result = collection_query_by_fields(MONGODB_CLIENT, DB_NAME, COLLECTIONS[0], input)
         query_result = []
