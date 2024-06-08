@@ -7,6 +7,7 @@ import conf.spotifyapi.spotfiyapi_functions
 import openai
 import conf.spotifyapi.spotifyauth
 from flask import Flask, request, redirect, session
+from backend.application import app
 
 @app.route('/login')
 def login():

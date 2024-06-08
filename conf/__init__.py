@@ -1,10 +1,7 @@
 from flask import Flask
 import os
 from dotenv import load_dotenv
-
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
-app.secret_key = os.getenv('FLASK_SECRET_KEY')
-app.debug = True
+import chromadb
 
 # load environment variables
 load_dotenv()
@@ -20,3 +17,9 @@ STATE_KEY = 'spotify_auth_state'
 AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 API_BASE_URL = 'https://api.spotify.com/v1/'
+
+# OPENAI Variables
+OPEN_AI_API_KEY = os.getenv('OPEN_AI_API_KEY')
+OPEN_AI_ASSISTANT_ID = os.getenv('OPEN_AI_ASSISTANT_ID')
+AI_MODEL = os.getenv('AI_MODEL')
+CHROMA_DB_PATH = os.getenv('CHROMADB_PATH')

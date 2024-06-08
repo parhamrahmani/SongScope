@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-from conf import app
+from backend.application import app
 from flask import redirect, request, session, Response, jsonify
 from datetime import datetime
 import requests

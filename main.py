@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, session
 from flask import redirect, session, render_template
 from conf import *
+from backend.application import app
 import conf.spotifyapi.spotifyauth
 import conf.spotifyapi.spotfiyapi_functions
 import openai
