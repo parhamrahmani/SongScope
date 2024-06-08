@@ -51,4 +51,6 @@ insert_albums(MONGODB_CLIENT, DB_NAME, albums_json)
 insert_artists(MONGODB_CLIENT, DB_NAME, artists_json)
 print("Third round of data insertion completed.")
 
+# exmaple query
+
 
