@@ -9,3 +9,5 @@ def query_mongodb(MONGODB_CLIENT, DB_NAME, COLLECTIONS):
         results[collection] = list(db[collection].find())
 
     return results
+
+# example push
