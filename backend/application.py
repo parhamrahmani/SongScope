@@ -5,7 +5,7 @@ import openai
 import subprocess
 import traceback
 from conf import *
-from conf.mongodb.query import collection_query_by_fields
+from conf.mongodb.query import collection_query_by_fields, collection_query_all
 
 load_dotenv()
 
@@ -37,20 +37,14 @@ def chat():
 
         if not user_input:
             return jsonify({"error": "No text provided"}), 400
-        input = {'artist_name': 'Sia'}
+        # input = {'artist_name': 'Sia'}
         prompt = user_input
-        result = collection_query_by_fields(MONGODB_CLIENT, DB_NAME, COLLECTIONS[0], input)
-        query_result = []
-        for item in result:
-            query_result.append(item)
 
-        print(query_result)
         content = (f"You are a music critic and someone who gives music recommendations with a critical"
                    f" and professional viewpoint. "
-                   f"Give your answers based on this query: {query_result} "
-                   f"DO NOT GIVE ANSWERS THAT WERE ALREADY IN THE QUERY. MAKE A"
-                   f" NEW RECOMMENDATION BASED ON THE QUERY."
-                   f"THE RECOMMEDATION SHOULD BE A NEW SONG OR ARTIST. ")
+                   f"Give your answers based on user's taste in music."
+                   f"DO NOT ANSWER IMMEDIATELY. MAKE SURE TO GATHER ALL INFORMATION FIRST"
+                   f"FROM THE USER.")
 
         client = openai.OpenAI(api_key=OPEN_AI_API_KEY)
 
