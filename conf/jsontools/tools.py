@@ -193,3 +193,9 @@ def extract_recommendations_with_weights(recommendations_data, weights):
         enriched_track.update(weights)  # Add each weight as a separate field in the track info
         enriched_tracks.append(enriched_track)
     return enriched_tracks
+
+
+def convert_documents_to_json(documents):
+    # Convert each document to JSON
+    readable_documents = [json.dumps(doc, default=str) for doc in documents]
+    return readable_documents

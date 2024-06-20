@@ -1,9 +1,10 @@
 import streamlit as st
 import requests
+from datetime import datetime
 
 # Initialize the session state for the chat history
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
+if 'sessions' not in st.session_state:
+    st.session_state['sessions'] = {}
 
 st.title("SongScope Chat")
 
@@ -16,25 +17,29 @@ if st.button("Send"):
                 response = requests.post("http://localhost:5000/private_chat", json={"text": user_input})
                 response.raise_for_status()
                 response_text = response.json()["response"]
-                st.session_state['messages'].append(("user", user_input))
-                st.session_state['messages'].append(("bot", response_text))
+                session_id = datetime.now().strftime('%Y%m%d_%H%M%S')
+                if session_id not in st.session_state['sessions']:
+                    st.session_state['sessions'][session_id] = []
+                st.session_state['sessions'][session_id].append(("user", user_input))
+                st.session_state['sessions'][session_id].append(("bot", response_text))
                 st.success("Response received")
             except requests.exceptions.RequestException as e:
                 st.error(f"Error: {e}")
 
-st.subheader("Chat History")
-for role, msg in st.session_state['messages']:
+# Display the current chat in the main area
+st.subheader("Current Chat")
+for role, msg in reversed(st.session_state['sessions'][session_id]):
     if role == "user":
         st.markdown(f"**You:** {msg}")
     else:
         st.markdown(f"**Bot:** {msg}")
 
-if st.button("Save Session History"):
-    from datetime import datetime
-    with open(f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt", "w") as f:
-        for role, msg in st.session_state['messages']:
+# Display the session titles in the sidebar
+st.sidebar.subheader("Chat History")
+for session_id in st.session_state['sessions']:
+    if st.sidebar.button(session_id):
+        for role, msg in st.session_state['sessions'][session_id]:
             if role == "user":
-                f.write(f"You: {msg}\n")
+                st.sidebar.markdown(f"**You:** {msg}")
             else:
-                f.write(f"Bot: {msg}\n")
-    st.success("Session history saved successfully.")
+                st.sidebar.markdown(f"**Bot:** {msg}")

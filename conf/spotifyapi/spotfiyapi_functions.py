@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-
+import conf.spotifyapi.spotifyauth
 from backend.application import app
 from flask import redirect, request, session, Response, jsonify
 from datetime import datetime
@@ -11,6 +11,7 @@ from conf.jsontools.json_loader import load_data
 from conf.mongodb.setup import *
 from conf.jsontools.tools import *
 from conf.mongodb.insertion import *
+from backend.generate_data import generate_seed_tracks
 
 MONGODB_CLIENT = MongoClient("mongodb://localhost:27017/")
 DB_NAME = "spotifydb"
@@ -212,3 +213,62 @@ def create_playlist():
                         mimetype='application/json')
 
     return jsonify({'message': 'Playlist created successfully', 'playlist_id': playlist_id})
+
+
+@app.route("/generate_random_recommendations/<int:num_recommendations>", methods=['GET'])
+def generate_random_recommendations(num_recommendations):
+    if 'access_token' not in session:
+        return redirect('/login')
+    if datetime.now().timestamp() > session.get('expires_at', 0):
+        return redirect('/refresh_token')
+    headers = {
+        'Authorization': f'Bearer {session["access_token"]}'
+    }
+
+    all_recommendations = []
+    for _ in range(num_recommendations):
+        # retrieve random seed tracks
+        seed_tracks = generate_seed_tracks(MONGODB_CLIENT, DB_NAME)
+        # Get parameters from the request in webpage form
+        min_energy = random.uniform(0.1, 0.9)  # Adjusted range
+        max_energy = random.uniform(min_energy, 1.0)
+        target_popularity = random.randint(1, 100)
+        target_acousticness = random.uniform(0.1, 0.9)  # Adjusted range
+        target_instrumentalness = random.uniform(0.1, 0.9)  # Adjusted range
+        target_tempo = random.uniform(60, 180)
+        # Define additional parameters for recommendations, if necessary
+        params = {
+            'seed_tracks': seed_tracks,
+            'limit': 20,
+            'market': 'US',
+            'min_energy': min_energy,
+            'max_energy': max_energy,
+            'target_popularity': target_popularity,
+            'target_acousticness': target_acousticness,
+            'target_instrumentalness': target_instrumentalness,
+            'target_tempo': target_tempo
+        }
+        # Remove empty parameters
+        params = {k: v for k, v in params.items() if v}
+        # Debugging logs
+        print(f"Parameters received: {params}")
+        # Construct the request URL
+        url = f"{API_BASE_URL}recommendations"
+        print(f"Request URL: {url}")
+        print(f"Request Params: {params}")
+        # Fetch recommendations based on the seeds
+        recommendations_response = requests.get(
+            url,
+            headers={'Authorization': f'Bearer {session["access_token"]}'},
+            params=params
+        )
+        if recommendations_response.status_code == 200:
+            recommendations_data = recommendations_response.json()
+            enriched_data = extract_recommendations_with_weights(recommendations_data, params)
+            insert_recommendation(MONGODB_CLIENT, DB_NAME, enriched_data)
+            all_recommendations.append(enriched_data)
+        else:
+            print(f"Error from Spotify API: {recommendations_response.content}")
+            return Response(recommendations_response.content, status=recommendations_response.status_code,
+                            mimetype='application/json')
+    return jsonify(all_recommendations)
