@@ -1,10 +1,11 @@
 # Prepare data for fine-tuning
 """
-Data preparation for fine-tuning the model
+conf/finetuning/prompts.py
 
-Data should be in the following format: JSONL or JSON Lines format
+This file is for generating prompts for the training data file. The prompts are generated from the recommendations
+in the MongoDB database. Pay attention that this wouldn't work if the collection is empty.
 
-Then i will feed this data for training the model using OpenAI's GPT-3.5-turbo model
+Use the output (prompts.jsonl) in the finetuning.py or in the OpenAI interface to fine-tune the model.
 
 """
 import uuid
@@ -40,11 +41,17 @@ def recommendations_to_prompts(query_result):
     grouped_tracks = dict(tracks)
 
     # Create prompts based on the grouped tracks
-    system_prompt = "You are a music critic, recommend songs based on the given weights."
+    system_prompt = ("You are a music critic, recommend songs based on the user's input and demand"
+                     "In the following prompts, the first number is the target acousticness, the second number is the target instrumentalness,"
+                     "the third number is the target popularity, and the fourth number is the target tempo."
+                     "These weights are an example how a user may request a recommendation"
+                     "based on its acousticness, instrumentalness, popularity, and tempo."
+                     "But if not, ask the user for more information.")
     prompts = []
 
     for weights, songs in grouped_tracks.items():
-        user_prompt = f"Acousticness: {weights[0]}, Instrumentalness: {weights[1]}, Popularity: {weights[2]}, Tempo: {weights[3]}"
+        user_prompt = (f"Recommend me a song. A song with these characteristics:"
+                       f"Acousticness: {weights[0]}, Instrumentalness: {weights[1]}, Popularity: {weights[2]}, Tempo: {weights[3]}")
         response = "Recommended songs:\n"
 
         for song in songs:
@@ -80,15 +87,16 @@ def save_prompts_to_jsonl(prompts, filename):
             f.write(json_line + '\n')
 
 
-# Generate the prompts
-prompts = recommendations_to_prompts()
-
-# uuid generated for prompts file
-uuid_num = uuid.uuid4()
-
-# Save the prompts to a JSONL file
-save_prompts_to_jsonl(prompts, f'../../example_json_files/prompts_{uuid_num}.jsonl')
-
-print("Prompts have been saved to prompts.jsonl")
 if __name__ == "__main__":
-    recommendations_to_prompts()
+    # Query the database for recommendations
+    recommendations = query.collection_query_all(MONGODB_CLIENT, DB_NAME, "recommendations")
+    print(f"Recommendations collection queried. Total recommendations: {len(recommendations)}")
+
+    # Generate the prompts
+    prompts = recommendations_to_prompts(recommendations)
+    print(f"Prompts for training the model generated. Total prompts: {len(prompts)}")
+
+    # Save the prompts to a JSONL file
+    save_prompts_to_jsonl(prompts, f'../data/training_data/prompts.jsonl')
+
+    print(f"JSONL file have been saved to prompts.jsonl")
