@@ -1,13 +1,30 @@
+"""
+conf/spotifyapi/spotifyauth.py
+
+Handles the authentication process for the Spotify API.
+"""
+import os
 from datetime import datetime
 from urllib.parse import urlencode
 import requests
-from flask import request, redirect, session
+from flask import request, redirect, session, jsonify
 from conf import *
 import conf.spotifyapi.spotfiyapi_functions
 import openai
 import conf.spotifyapi.spotifyauth
 from flask import Flask, request, redirect, session
 from backend.application import app
+
+
+
+@app.route('/check_auth')
+def check_auth():
+    if 'access_token' in session:
+        print("Access token exists in session")
+        print("Access token: ", session['access_token'])
+        return True
+    print("Access token does not exist in session")
+    return False
 
 
 @app.route('/login')
@@ -52,7 +69,13 @@ def callback():
         session['refresh_token'] = token_info['refresh_token']
         session['expires_at'] = datetime.now().timestamp() + token_info.get('expires_in', 3600)  # default to 1 hour
 
-        return redirect('/home')
+        os.environ['SPOTIFY_ACCESS_TOKEN'] = session['access_token']
+        os.environ['SPOTIFY_REFRESH_TOKEN'] = session['refresh_token']
+        os.environ['SPOTIFY_EXPIRES_AT'] = str(session['expires_at'])
+
+
+
+        return redirect('/interface')
 
     return 'Error: No code in request'
 
@@ -76,4 +99,7 @@ def refresh_token():
         session['access_token'] = new_token_info['access_token']
         session['expires_at'] = datetime.now().timestamp() + new_token_info['expires_in']
 
-        return redirect('/home')
+        os.environ['SPOTIFY_ACCESS_TOKEN'] = session['access_token']
+        os.environ['SPOTIFY_EXPIRES_AT'] = str(session['expires_at'])
+
+        return redirect('/chat')
