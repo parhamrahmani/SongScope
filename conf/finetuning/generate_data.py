@@ -1,7 +1,22 @@
+"""
+conf/finetuning/generate_data.py
+
+This file only generates seed tracks from the liked_songs collection in the MongoDB database randomly.
+
+we can't use all of the liked songs to generate recommendations because there is a limit of 5 seed tracks in each
+recommendation request to the Spotify API. In this way we can generate a random seed tracks from the liked songs
+that we have in the MongoDB database.
+
+You can do this manually with more careful selection of the seed tracks, but for the purpose of this project we will
+use random selection because we need large amount of data to train the model and to save time.
+
+"""
+
 import random
 from conf import MONGODB_CLIENT, DB_NAME
 from flask import session, redirect
 from datetime import datetime
+
 
 def generate_seed_tracks(MONGODB_CLIENT, DB):
     print("Getting random seed tracks from liked songs")
