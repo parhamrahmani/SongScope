@@ -1,3 +1,10 @@
+"""
+conf/mongodb/setup.py
+
+This module contains functions to setup the MongoDB database and collections for before using the program for the first
+ time.
+"""
+
 import json
 
 

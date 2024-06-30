@@ -1,3 +1,10 @@
+"""
+conf/mongodb/query.py
+
+This module contains functions to query MongoDB collections by specific fields or fetch all documents.
+
+"""
+
 from pymongo import MongoClient
 import json
 from conf.jsontools.tools import convert_documents_to_json

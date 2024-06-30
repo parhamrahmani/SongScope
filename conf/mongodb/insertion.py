@@ -1,3 +1,11 @@
+"""
+conf/mongodb/insertion.py
+
+This module contains functions to insert transformed data from Spotify API into MongoDB collections.
+
+"""
+
+
 import json
 
 
