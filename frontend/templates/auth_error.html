@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Required - SongScope</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/welcome.js') }}" defer></script>
+</head>
+<body>
+    <header class="top-header">
+        <nav>
+            <ul>
+                <li><a href="/docs">Documentation</a></li>
+                <li><a href="/diagram">Diagrams</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <header>
+            <h1>Authentication Required</h1>
+            <p>You are not authenticated. Please go back to the <a href="/">welcome page</a> and repeat the authentication process.</p>
+        </header>
+        <main>
+            <button onclick="window.location.href='/'">Go to Welcome Page</button>
+        </main>
+        <footer>
+            <p>&copy; 2024 SongScope. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
