@@ -199,3 +199,10 @@ def convert_documents_to_json(documents):
     # Convert each document to JSON
     readable_documents = [json.dumps(doc, default=str) for doc in documents]
     return readable_documents
+
+
+def load_json(json_path):
+    # Load your data from a file or any other source
+    with open(json_path, 'r') as file:
+        data = json.load(file)
+    return data
