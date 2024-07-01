@@ -2,14 +2,14 @@
 
 ## Introduction
 
-SongScope is a AI powered music recommendation system that experiments with your spotify data such as your top tracks, liked songs
-, artists , etc to recommend you new songs that you might like. The system can add a personal touch to the recommendations
-if you provide your mood and personal emotional data. The system can be also fine tuned based on your liked songs and
-spotify recommendation system to experiment with fine tuned models too. Other features include a function to search
+SongScope is an AI powered music recommendation system that experiments with your spotify data such as your top tracks, liked songs
+, artists , etc. to recommend you new songs that you might like. The system can add a personal touch to the recommendations
+if you provide your mood and personal emotional data. The system can be also fine-tuned based on your liked songs and
+spotify recommendation system to experiment with fine-tuned models too. Other features include a function to search
 reviews from pitchfork or similar websites to get a better understanding of the song and artist and have a critical view.
 The features combined with personalized fine-tuning can experiment with a newly personalized recommendation system.
 
-## Pre-Installation Requirements (Necessary before starting the project setup)
+## Pre-Installation Requirements
 - **Python 3.10**
 
 Python 3.10 is used as interpreter for the project.
@@ -46,9 +46,9 @@ later in the project setup.
 We will be using MongoDB as our database, ChromaDB for storing reviews and chat history and Nginx for our
 web server configurations. 
 
-The details will follow in the installation section. However install these before starting with the project setup.
+The details will follow in the installation section. However, install these before starting with the project setup.
 
-## Project Setup (Debian based systems)
+## Project Setup - Debian GNU/Linux 12 (bookworm)
 ### 1. Clone the repository
 ```git
 git clone https://github.com/parhamrahmani/SongScope.git
@@ -134,7 +134,7 @@ sudo systemctl status mongod
         - the songs that the user has liked and saved in their library.
     - recommendations
         - the songs that the Spotify recommendation system has recommended to the user.
-        - it originates from when the `/recommendations` and `/generate_random_recommendations/<int:num_recommendations> `are called and it will be saved in the database.
+        - it originates from when the `/recommendations` and `/generate_random_recommendations/<int:num_recommendations> `are called, and it will be saved in the database.
         
 ### 5. Set up ChromaDB
 - Install ChromaDB
@@ -186,7 +186,7 @@ AI_MODEL=<YOUR_OPENAI_MODEL> # The model that you want to use for the AI like gp
 TAVILY_KEY=<YOUR_TAVILY_KEY>
 ```
 ### Additional Information
-- This setup is done on a linux machine. You can set up the project on a windows machine as well. For windows, you can use WSL or easily go to each requirement documentation and follow the instructions.
+- This setup is done on a linux machine. You can set up the project on a Windows machine as well. For windows, you can use WSL or easily go to each requirement documentation and follow the instructions.
 
 ## Running the project
 ### Start Nginx Service
@@ -235,7 +235,7 @@ Chainlit thread started.
 2024-07-01 02:29:18 - HTTP Request: POST https://api.openai.com/v1/threads "HTTP/1.1 200 OK"
 ```
 This means that the chatbot is running.
-- write something in the chatbot and you should see the response from the chatbot. If the response is shown in the chatbot, the chatbot is working properly.
+- write something in the chatbot, and you should see the response from the chatbot. If the response is shown in the chatbot, the chatbot is working properly.
 - expect the chatbot to be slow and have patience.
 - You should expect this message in terminal when the chatbot is working properly. (This is a sample)
 ```bash
