@@ -159,8 +159,8 @@ http://localhost:5000/liked_songs
 - The more data you have in the recommendations table, the better the fine-tuning will be.
 - Fine-tuning costs money and time and wouldn't necessarily improve the recommendation system. It's an experimental feature. That's why it's optional.
 - Firstly run prompt.py to generate prompts based on the recommendations table. each prompt will be each iteration of a recommendation (based on its id). 
-- Then run the fine_tune.py to fine-tune the model based on the prompts generated.
-   - this will upload prompts.jsonl to the OpenAI API and will fine-tune the model based on the prompts.
+- Then run the `conf/finetuning/finetuning.py` to fine-tune the model based on the prompts generated.
+   - this will upload `conf/finetuning/prompts.jsonl` to the OpenAI API and will fine-tune the model based on the prompts.
 - **You can do this in OPENAI API Dashboard in their website as well if you want to do this with a gui environment**
 ### 8. Set up OpenAI Assistant 
 - Go to the OpenAI API Dashboard and create a new assistant or use the script in the project to create a new assistant.
