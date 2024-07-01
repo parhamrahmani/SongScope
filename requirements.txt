@@ -6,3 +6,4 @@ openai~=1.30.5
 chromadb~=0.5.0
 pymongo~=4.7.3
 chainlit~=1.1.304
+beautifulsoup4~=4.12.3

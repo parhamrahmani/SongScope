@@ -113,14 +113,8 @@ def interface():
 @app.route('/chat', methods=['POST'])
 def chat():
     print("Entering chat function")
-    print(f"Received cookies: {request.cookies}")
-
-    access_token = request.cookies.get('access_token')
-    print(f"Extracted access token: {access_token}")
-
     thread_id = request.json.get("thread_id")
     message = request.json.get("message")
-
     print("Thread ID: ", thread_id)
     print("Message: ", message)
 

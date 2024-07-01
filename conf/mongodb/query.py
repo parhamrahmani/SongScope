@@ -8,6 +8,8 @@ This module contains functions to query MongoDB collections by specific fields o
 from pymongo import MongoClient
 import json
 from conf.jsontools.tools import convert_documents_to_json
+
+
 # Function to query documents by specific fields
 def collection_query_by_fields(MONGODB_CLIENT, DB_NAME, COLLECTION, INPUT_DICT):
     db = MONGODB_CLIENT[DB_NAME]
@@ -28,4 +30,3 @@ def collection_query_all(MONGODB_CLIENT, DB_NAME, COLLECTION):
     jsonified_documents = convert_documents_to_json(documents)
 
     return jsonified_documents
-
