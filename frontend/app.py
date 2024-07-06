@@ -6,6 +6,7 @@ that communicates with the backend. The chat interface is used to interact with 
 the user.
 
 """
+import logging
 from urllib.parse import urlparse, parse_qs
 
 import chainlit as cl
@@ -27,6 +28,11 @@ BACKEND_URL = "http://localhost:5000"
 
 
 def get_thread_by_name(name):
+    """
+    Get a thread by its name.
+    :param name:
+    :return:
+    """
     for thread in threading.enumerate():
         if thread.name == name:
             return thread
@@ -35,6 +41,10 @@ def get_thread_by_name(name):
 
 @cl.on_chat_start
 async def on_chat_start():
+    """
+    This function is called when the chat is started.
+    :return: the response from the OpenAI API after submitting the tool outputs.
+    """
     cl.user_session.set("access_token", os.environ.get('SPOTIFY_ACCESS_TOKEN'))
     cl.user_session.set("refresh_token", os.environ.get('SPOTIFY_REFRESH_TOKEN'))
     cl.user_session.set("expires_at", os.environ.get('SPOTIFY_EXPIRES_AT'))
@@ -45,11 +55,16 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
+    """
+    This function is called when a message is received in the chat.
+    :param message: the message received in the chat.
+    :return: the response from the OpenAI API after submitting the tool outputs.
+    """
     thread_id = cl.user_session.get("thread_id")
     access_token = cl.user_session.get("access_token")
 
     if access_token is not None:
-        print(f"Using session ID: {access_token}")  # Debug print
+        logging.info(f"Using session ID: {access_token}")  # Debug print
     else:
         await cl.Message(content="Error: No access token available. Please log in again.").send()
         return
@@ -74,7 +89,10 @@ async def on_message(message: cl.Message):
 
 
 def run_chainlit():
-    print("Starting Chainlit server")
+    """
+    Run the Chainlit server.
+    """
+    logging.info("Starting Chainlit server")
     os.environ["CHAINLIT_NO_BROWSER"] = "true"
     os.environ["PORT"] = "8000"
     subprocess.run(["chainlit", "run", __file__, "--host", "0.0.0.0", "--port", "8000", "--headless"], check=True)

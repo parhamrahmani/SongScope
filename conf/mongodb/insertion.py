@@ -7,10 +7,18 @@ This module contains functions to insert transformed data from Spotify API into 
 
 
 import json
+import logging
 
 
 def insert_tracks(MONGODB_CLIENT, DB, data):
-    print(f"Inserting tracks data into {DB}")
+    """
+    Insert transformed tracks data into the MongoDB database.
+    :param MONGODB_CLIENT: the client to connect to the MongoDB database
+    :param DB: the name of the database
+    :param data: the transformed tracks data
+    :return: a message indicating the success of the insertion
+    """
+    logging.info(f"Inserting tracks data into {DB}")
     spotifydb = MONGODB_CLIENT[DB]
 
     liked_songs = spotifydb["liked_songs"]
@@ -21,16 +29,23 @@ def insert_tracks(MONGODB_CLIENT, DB, data):
     # Insert data into collections
     for track in tracks:
         if liked_songs.count_documents({"track_id": track["track_id"]}, limit=1) == 0:
-            print(f"Inserting {track['name']} into liked_songs collection.")
+            logging.info(f"Inserting {track['name']} into liked_songs collection.")
             liked_songs.insert_one(track)
         else:
-            print(f"Track {track['name']} already exists in liked_songs collection.")
+            logging.info(f"Track {track['name']} already exists in liked_songs collection.")
 
-    print("Inserted transformed tracks successfully.")
+    logging.info("Inserted transformed tracks successfully.")
 
 
 def insert_albums(MONGODB_CLIENT, DB, data):
-    print(f"Inserting albums data into {DB}")
+    """
+    Insert transformed albums data into the MongoDB database.
+    :param MONGODB_CLIENT: the client to connect to the MongoDB database
+    :param DB: the name of the database
+    :param data: the transformed albums data
+    :return: the message indicating the success of the insertion
+    """
+    logging.info(f"Inserting albums data into {DB}")
     spotifydb = MONGODB_CLIENT[DB]
 
     albums_collection = spotifydb["albums"]
@@ -42,15 +57,22 @@ def insert_albums(MONGODB_CLIENT, DB, data):
     for album in albums:
         if albums_collection.count_documents({"id": album["id"]}, limit=1) == 0:
             albums_collection.insert_one(album)
-            print(f"Inserting {album['name']} into albums collection.")
+            logging.info(f"Inserting {album['name']} into albums collection.")
         else:
-            print(f"Album {album['name']} already exists in albums collection.")
+            logging.info(f"Album {album['name']} already exists in albums collection.")
 
-    print("Inserted transformed albums successfully.")
+    logging.info("Inserted transformed albums successfully.")
 
 
 def insert_artists(MONGODB_CLIENT, DB, data):
-    print(f"Inserting artists data into {DB}")
+    """
+    Insert transformed artists data into the MongoDB database.
+    :param MONGODB_CLIENT: the client to connect to the MongoDB database
+    :param DB: the name of the database
+    :param data: the transformed artists data
+    :return: the message indicating the success of the insertion
+    """
+    logging.info(f"Inserting artists data into {DB}")
     spotifydb = MONGODB_CLIENT[DB]
 
     artists_collection = spotifydb["artists"]
@@ -62,15 +84,22 @@ def insert_artists(MONGODB_CLIENT, DB, data):
     for artist in artists:
         if artists_collection.count_documents({"id": artist["id"]}, limit=1) == 0:
             artists_collection.insert_one(artist)
-            print(f"Inserting {artist['name']} into artists collection.")
+            logging.info(f"Inserting {artist['name']} into artists collection.")
         else:
-            print(f"Artist {artist['name']} already exists in artists collection.")
+            logging.info(f"Artist {artist['name']} already exists in artists collection.")
 
-    print("Inserted transformed artists successfully.")
+    logging.info("Inserted transformed artists successfully.")
 
 
 def insert_playlist(MONGODB_CLIENT, DB, data):
-    print(f"Inserting playlist data into {DB}")
+    """
+    Insert playlist data into the MongoDB database.
+    :param MONGODB_CLIENT: the client to connect to the MongoDB database
+    :param DB: the name of the database
+    :param data: the playlist data
+    :return: the message indicating the success of the insertion
+    """
+    logging.info(f"Inserting playlist data into {DB}")
     spotifydb = MONGODB_CLIENT[DB]
 
     playlists = spotifydb["playlists"]
@@ -85,12 +114,19 @@ def insert_playlist(MONGODB_CLIENT, DB, data):
         upsert=True
     )
 
-    print("Inserted or updated playlist data successfully.")
+    logging.info("Inserted or updated playlist data successfully.")
 
 
 def insert_recommendation(MONGODB_CLIENT, DB, data):
+    """
+    Insert recommendation data into the MongoDB database.
+    :param MONGODB_CLIENT: the client to connect to the MongoDB database
+    :param DB: the name of the database
+    :param data: the recommendation data
+    :return: the message indicating the success of the insertion
+    """
     spotifydb = MONGODB_CLIENT[DB]
-    print(f"Inserting recommendation data into the database.")
+    logging.info(f"Inserting recommendation data into the database.")
     recommendations = spotifydb["recommendations"]
     for track in data:
         track_id = track['id']
@@ -99,4 +135,4 @@ def insert_recommendation(MONGODB_CLIENT, DB, data):
             {"$set": track},
             upsert=True
         )
-    print("Inserted or updated recommendation data successfully.")
+    logging.info("Inserted or updated recommendation data successfully.")

@@ -3,6 +3,7 @@ conf/spotifyapi/spotifyapi_functions.py
 
 Handles the Spotify API functions.
 """
+import logging
 import os
 
 import urllib.parse
@@ -10,7 +11,7 @@ import re
 
 import urllib.parse
 from pymongo import MongoClient
-from backend.application import app
+from backend.welcome_auth import app
 from flask import redirect, request, session, Response, jsonify
 from datetime import datetime
 import requests
@@ -26,6 +27,10 @@ DB_NAME = "spotifydb"
 
 @app.route("/playlists")
 def get_playlists():
+    """
+    Get the user's playlists.
+    :return: the user's playlists
+    """
     if 'access_token' not in session:
         return redirect('/login')
 
@@ -42,7 +47,12 @@ def get_playlists():
 
 
 @app.route("/liked_songs")
-def get_liked_songs(return_data=False):
+def get_liked_songs():
+    """
+    Get the user's liked songs.
+
+    :return: the user's liked songs
+    """
     if 'access_token' not in session:
         return redirect('/login')
 
@@ -80,6 +90,10 @@ def get_liked_songs(return_data=False):
 
 @app.route("/top_tracks")
 def get_top_tracks():
+    """
+    Get the user's top tracks.
+    :return: the user's top tracks
+    """
     if 'access_token' not in session:
         return redirect('/login')
     if datetime.now().timestamp() > session.get('expires_at', 0):
@@ -102,6 +116,10 @@ API_BASE_URL = 'https://api.spotify.com/v1/'
 
 @app.route("/recommendations", methods=['GET'])
 def get_recommendations():
+    """
+    Get recommendations based on the user's top tracks.
+    :return: the recommendations based on the user's top tracks
+    """
     if 'access_token' not in session:
         return redirect('/login')
     if datetime.now().timestamp() > session.get('expires_at', 0):
@@ -138,11 +156,11 @@ def get_recommendations():
     # Remove empty parameters
     params = {k: v for k, v in params.items() if v}
     # Debugging logs
-    print(f"Parameters received: {params}")
+    logging.info(f"Parameters received: {params}")
     # Construct the request URL
     url = f"{API_BASE_URL}recommendations"
-    print(f"Request URL: {url}")
-    print(f"Request Params: {params}")
+    logging.info(f"Request URL: {url}")
+    logging.info(f"Request Params: {params}")
     # Fetch recommendations based on the seeds
     recommendations_response = requests.get(
         url,
@@ -155,13 +173,17 @@ def get_recommendations():
         insert_recommendation(MONGODB_CLIENT, DB_NAME, enriched_data)
         return Response(json.dumps(enriched_data), mimetype='backend/json')
     else:
-        print(f"Error from Spotify API: {recommendations_response.content}")
+        logging.error(f"Error from Spotify API: {recommendations_response.content}")
         return Response(recommendations_response.content, status=recommendations_response.status_code,
                         mimetype='backend/json')
 
 
 @app.route("/create_playlist", methods=['POST'])
 def create_playlist():
+    """
+    Create a new playlist and add tracks to it.
+    :return: the response message
+    """
     if 'access_token' not in session:
         return redirect('/login')
     if datetime.now().timestamp() > session.get('expires_at', 0):
@@ -224,6 +246,11 @@ def create_playlist():
 
 @app.route("/generate_random_recommendations/<int:num_recommendations>", methods=['GET'])
 def generate_random_recommendations(num_recommendations):
+    """
+    Generate random recommendations based on seed tracks and weights. Used for fine-tuning and training.
+    :param num_recommendations: the number of recommendations to generate
+    :return: the generated recommendations
+    """
     if 'access_token' not in session:
         return redirect('/login')
     if datetime.now().timestamp() > session.get('expires_at', 0):
@@ -258,11 +285,11 @@ def generate_random_recommendations(num_recommendations):
         # Remove empty parameters
         params = {k: v for k, v in params.items() if v}
         # Debugging logs
-        print(f"Parameters received: {params}")
+        logging.info(f"Parameters received: {params}")
         # Construct the request URL
         url = f"{API_BASE_URL}recommendations"
-        print(f"Request URL: {url}")
-        print(f"Request Params: {params}")
+        logging.info(f"Request URL: {url}")
+        logging.info(f"Request Params: {params}")
         # Fetch recommendations based on the seeds
         recommendations_response = requests.get(
             url,
@@ -275,54 +302,72 @@ def generate_random_recommendations(num_recommendations):
             insert_recommendation(MONGODB_CLIENT, DB_NAME, enriched_data)
             all_recommendations.append(enriched_data)
         else:
-            print(f"Error from Spotify API: {recommendations_response.content}")
+            logging.info(f"Error from Spotify API: {recommendations_response.content}")
             return Response(recommendations_response.content, status=recommendations_response.status_code,
                             mimetype='backend/json')
     return jsonify(all_recommendations)
 
 
-
-
-def search_track_on_spotify(track_name, artist_name=None):
+def search_track_on_spotify(track_name, artist_name):
+    """
+    Search for a track on Spotify. Used for result verification in Chatbot.
+    :param track_name
+    :param artist_name
+    :return: the search result
+    """
+    logging.info(f"Searching Spotify for track: {track_name} by {artist_name}")
     access_token = session.get('access_token')
     if not access_token:
         access_token = os.environ.get('SPOTIFY_ACCESS_TOKEN')
         if not access_token:
-            return None, "No access token available"
+            return f"(No Spotify access token available)"
 
     headers = {
         'Authorization': f'Bearer {access_token}'
     }
 
-    # Remove any numbering or quotes from the track name
-    track_name = re.sub(r'^\d+\.\s*|[""]', '', track_name.strip())
-
     # Construct the query with double encoding
-    query = f"track%253A{urllib.parse.quote(track_name)}"
-    if artist_name:
-        query += f"%2Bartist%253A{urllib.parse.quote(artist_name)}"
+    track_name_encoded = urllib.parse.quote(track_name)
+    artist_name_encoded = urllib.parse.quote(artist_name)
+    query = f"track%3A{track_name_encoded}%2520artist%3A{artist_name_encoded}"
+    logging.info(f"Constructed query: {query}")
 
     params = {
         'q': query,
         'type': 'track',
-        'limit': 1
+        'limit': 20  # Increase limit to fetch more results
     }
 
     try:
         url = f"https://api.spotify.com/v1/search?{urllib.parse.urlencode(params)}"
-
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
 
-        if data and 'tracks' in data and 'items' in data['tracks'] and data['tracks']['items']:
-            track = data['tracks']['items'][0]
-            return {
-                'name': track['name'],
-                'artists': [{'name': artist['name']} for artist in track['artists']],
-                'external_urls': track['external_urls']
-            }, None
+        total_results = len(data['tracks']['items']) if 'tracks' in data and 'items' in data['tracks'] else 0
+        logging.info(f"Total results found: {total_results}")
+
+        if total_results > 0:
+            found_tracks = []
+            for track in data['tracks']['items']:
+                track_name_match = track_name.lower() in track['name'].lower()
+                artist_name_match = any(artist_name.lower() in artist['name'].lower() for artist in track['artists'])
+
+                logging.info(f"Result: {track['name']} by {track['artists'][0]['name']}")
+                if track_name_match and artist_name_match:
+                    logging.info(f"Found track: {track['name']} by {track['artists'][0]['name']}")
+                    spotify_url = track['external_urls'].get('spotify', 'No Spotify URL available')
+                    found_tracks.append(f"{track['name']} by {track['artists'][0]['name']} - {spotify_url}")
+                    break
+
+            if found_tracks:
+                return "\n".join(found_tracks)
+            else:
+                logging.info(f"Track not found: {track_name} by {artist_name}")
+                return f"({track_name} by {artist_name} - Not found on Spotify)"
         else:
-            return None, "No tracks found"
+            logging.info(f"Track not found: {track_name} by {artist_name}")
+            return f"({track_name} by {artist_name} - Not found on Spotify)"
     except requests.RequestException as e:
-        return None, f"Error searching Spotify: {str(e)}"
+        logging.error(f"Error searching Spotify: {str(e)}")
+        return f"({track_name} by {artist_name} - Error searching Spotify)"

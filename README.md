@@ -41,10 +41,9 @@ by signing up [here](https://platform.openai.com/signup).
 We will also need OPENAI ASSISTANT ID which has functions available to it. We will do this
 later in the project setup.
 
-- **MongoDB, ChromaDB and Nginx**
+- **MongoDB and Nginx**
 
-We will be using MongoDB as our database, ChromaDB for storing reviews and chat history and Nginx for our
-web server configurations. 
+We will be using MongoDB as our database, Nginx for our web server configurations. 
 
 The details will follow in the installation section. However, install these before starting with the project setup.
 
@@ -136,12 +135,7 @@ sudo systemctl status mongod
         - the songs that the Spotify recommendation system has recommended to the user.
         - it originates from when the `/recommendations` and `/generate_random_recommendations/<int:num_recommendations> `are called, and it will be saved in the database.
         
-### 5. Set up ChromaDB
-- Install ChromaDB
-```bash
-pip install chromadb
-```
-- You don't need to set up the ChromaDB, it will be set up automatically when you run the chatbot in the first successful run. The chatbot will be used to store the chat history and reviews.
+~~### 5. Set up ChromaDB (DEPRECATED)~~
 ### 6. Populate the MongoDB databases with your spotify data 
 - Run this endpoint to populate the mongodb collections with your spotify data.
 ```bash
