@@ -8,7 +8,7 @@ import time
 from flask import render_template_string
 from conf import *
 from conf.spotifyapi import spotifyauth
-from backend.application import app
+from backend.welcome_auth import app
 from backend.chat import chat, interface
 from frontend.app import run_chainlit
 
