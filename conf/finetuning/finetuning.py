@@ -36,7 +36,7 @@ In this code we have used prompts.jsonl if not found we use the example_training
 3. You can do this also easily in the OpenAI interface.
 
 """
-
+import logging
 import time
 from openai import OpenAI
 import os
@@ -54,8 +54,12 @@ client = OPENAI_CLIENT
 
 
 def upload_data():
+    """
+    Upload the training data file to the OpenAI API.
+    :return:  The ID of the uploaded training file.
+    """
     # Upload a training data file - example_training_prompts.jsonl
-    print(training_data_path)
+    logging.info("Uploading training data file from path: %s", training_data_path)
     response = client.files.create(
         file=open(training_data_path, "rb"),
         purpose="fine-tune"
@@ -65,6 +69,12 @@ def upload_data():
 
 # Create a fine-tuning event
 def fine_tune(training_file_id):
+    """
+    Create a fine-tuning job with the uploaded training file and the AI model.
+    :param training_file_id: the ID of the uploaded training file from upload_data()
+    :return: the ID of the fine-tuning job.
+    """
+    logging.info("Creating fine-tuning job with training file: %s and model: %s", training_file_id, AI_MODEL)
     response = client.fine_tuning.jobs.create(
         training_file=training_file_id,
         model=AI_MODEL
@@ -73,32 +83,43 @@ def fine_tune(training_file_id):
 
 
 def job_status(job_id):
+    """
+    Retrieve the status of a fine-tuning job.
+    :param job_id: the ID of the fine-tuning job.
+    :return: the status of the fine-tuning job.
+    """
     return client.fine_tuning.jobs.retrieve(job_id)
 
 
 def cancel_job(job_id):
+    """
+    Cancel a fine-tuning job.
+    :param job_id: the ID of the fine-tuning job to cancel.
+    :return: the response from the API.
+    """
+    logging.info("Cancelling fine-tuning job: %s", job_id)
     return client.fine_tuning.jobs.cancel(job_id)
 
 
 if __name__ == '__main__':
-    print(training_data_path)
     training_file_id = upload_data()
     fine_tune_job_id = fine_tune(training_file_id)
-    print("Fine-tuning job has been created:", fine_tune_job_id)
     status = job_status(fine_tune_job_id)
     # if the job is ongoing, wait for it to finish
     while status.finished_at is None:
         status = job_status(fine_tune_job_id)
         if status.status == "failed":
-            print("Job failed.")
+            logging.error("Fine-tuning job %s failed.", fine_tune_job_id)
             cancel_job(fine_tune_job_id)
             break
-        print("Job status:", status.status)
+        logging.info("Fine-tuning job status: %s", status.status)
         time.sleep(10)
-    print("Fine-tuning job has finished.")
+    logging.info("Fine-tuning job %s finished.", fine_tune_job_id)
     # save the fine-tuned model and change the environment variable AI_MODEL to the new model
     fine_tuned_model = status.model
-    print("Fine-tuned model:", fine_tuned_model)
+    logging.info("Fine-tuned model: %s", fine_tuned_model)
     # update the AI_MODEL environment variable
     os.environ["AI_MODEL"] = fine_tuned_model
-    print("AI_MODEL environment variable updated.")
+    logging.info("AI_MODEL environment variable updated to: %s", fine_tuned_model)
+    logging.info("Fine-tuning process completed. Make sure to update the AI_MODEL environment variable in .env file "
+                 "as well.")

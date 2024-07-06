@@ -8,6 +8,7 @@ in the MongoDB database. Pay attention that this wouldn't work if the collection
 Use the output (prompts.jsonl) in the finetuning.py or in the OpenAI interface to fine-tune the model.
 
 """
+import logging
 import uuid
 
 from conf.mongodb import query
@@ -18,8 +19,15 @@ from backend import SYSTEM_PROMPT
 
 
 def recommendations_to_prompts(query_result):
+    """
+    Generate prompts for the training data file from the recommendations in the MongoDB database.
+    This will be used to fine-tune the model.
+    :param query_result: the result of the query to the recommendations collection in the MongoDB database.
+    :return: the prompts for the training data file.
+    """
     if query_result is None:
         # Get all recommendations from the database
+        logging.info("The Input is None. Querying the recommendations collection in the MongoDB database.")
         query_result = query.collection_query_all(MONGODB_CLIENT, DB_NAME, "recommendations")
 
     # Initialize a defaultdict to group tracks
@@ -77,6 +85,12 @@ def recommendations_to_prompts(query_result):
 
 
 def save_prompts_to_jsonl(prompts, filename):
+    """
+    Save the prompts to a JSONL file.
+    :param prompts: the prompts to save
+    :param filename: name of the file to save the prompts
+    :return: the JSONL file with the prompts
+    """
     with open(filename, 'w') as f:
         for prompt in prompts:
             json_line = json.dumps(prompt)
@@ -86,13 +100,12 @@ def save_prompts_to_jsonl(prompts, filename):
 if __name__ == "__main__":
     # Query the database for recommendations
     recommendations = query.collection_query_all(MONGODB_CLIENT, DB_NAME, "recommendations")
-    print(f"Recommendations collection queried. Total recommendations: {len(recommendations)}")
+    logging.info("Recommendations fetched from the MongoDB database. Total recommendations: %s", len(recommendations))
 
     # Generate the prompts
     prompts = recommendations_to_prompts(recommendations)
-    print(f"Prompts for training the model generated. Total prompts: {len(prompts)}")
-
+    logging.info("Prompts generated. Total prompts: %s", len(prompts))
     # Save the prompts to a JSONL file
     save_prompts_to_jsonl(prompts, f'../data/training_data/prompts.jsonl')
 
-    print(f"JSONL file have been saved to prompts.jsonl")
+    logging.info("Prompts saved to ../data/training_data/prompts.jsonl")
