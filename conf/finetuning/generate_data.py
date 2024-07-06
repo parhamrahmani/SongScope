@@ -14,8 +14,7 @@ use random selection because we need large amount of data to train the model and
 import logging
 import random
 from conf import MONGODB_CLIENT, DB_NAME
-from flask import session, redirect
-from datetime import datetime
+
 
 
 def generate_seed_tracks(MONGODB_CLIENT, DB):

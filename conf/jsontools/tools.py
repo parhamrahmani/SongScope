@@ -1,8 +1,14 @@
 import json
+import logging
 
 
 def extract_and_transform_liked_songs(data):
-    print("Starting to extract and transform liked songs data.")
+    """
+    Extract and transform the liked songs data into a more readable format to save in the collection in MongoDB.
+    :param data:  the data to extract and transform
+    :return:    the transformed data
+    """
+    logging.info("Starting to extract and transform liked songs data.")
     if isinstance(data, list):
         items = data
     else:
@@ -67,12 +73,17 @@ def extract_and_transform_liked_songs(data):
         }
         liked_songs.append(track_info)
 
-    print(f"Extracted and transformed {len(liked_songs)} liked songs.")
+    logging.info(f"Extracted and transformed {len(liked_songs)} liked songs.")
     return liked_songs
 
 
 def extract_and_transform_tracks(data):
-    print("Starting to extract and transform tracks data.")
+    """
+    Extract and transform the tracks data into a more readable format.
+    :param data: the data to extract and transform
+    :return: the transformed data
+    """
+    logging.info("Starting to extract and transform tracks data.")
     tracks_data = data if isinstance(data, list) else data.get("items", [])
 
     transformed_tracks = []
@@ -131,13 +142,13 @@ def extract_and_transform_tracks(data):
     albums_json = json.dumps(transformed_albums, indent=4)
     artists_json = json.dumps(transformed_artists, indent=4)
 
-    print(
+    logging.info(
         f"Extracted and transformed {len(transformed_tracks)} tracks, {len(transformed_albums)} albums, and {len(transformed_artists)} artists.")
     return tracks_json, albums_json, artists_json
 
 
 def extract_and_transform_playlists(data):
-    print("Starting to extract and transform playlists data.")
+    logging.info("Starting to extract and transform playlists data.")
     playlist_info = {
         "description": data.get("description", ""),
         "playlist_id": data.get("id", ""),
@@ -163,7 +174,7 @@ def extract_and_transform_playlists(data):
         }
         playlist_info["tracks"].append(track_info)
 
-    print(f"Extracted and transformed {len(playlist_info['tracks'])} tracks in playlist.")
+    logging.info(f"Extracted and transformed {len(playlist_info['tracks'])} tracks in playlist.")
     # Convert to JSON string
     playlist_json = json.dumps(playlist_info, indent=4)
 
@@ -171,6 +182,12 @@ def extract_and_transform_playlists(data):
 
 
 def extract_recommendations_with_weights(recommendations_data, weights):
+    """
+    Extract recommendations data and enrich it with weights.
+    :param recommendations_data:  the recommendations data to extract
+    :param weights: the weights to add to each track
+    :return: the enriched tracks
+    """
     enriched_tracks = []
     for track in recommendations_data['tracks']:
         enriched_track = {
@@ -196,12 +213,22 @@ def extract_recommendations_with_weights(recommendations_data, weights):
 
 
 def convert_documents_to_json(documents):
+    """
+    Convert documents to JSON strings.
+    :param documents:  the documents to convert
+    :return: the JSON strings
+    """
     # Convert each document to JSON
     readable_documents = [json.dumps(doc, default=str) for doc in documents]
     return readable_documents
 
 
 def load_json(json_path):
+    """
+    Load JSON data from a file.
+    :param json_path: the path to the JSON file
+    :return: the loaded JSON data
+    """
     # Load your data from a file or any other source
     with open(json_path, 'r') as file:
         data = json.load(file)

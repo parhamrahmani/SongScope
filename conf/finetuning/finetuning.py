@@ -38,7 +38,6 @@ In this code we have used prompts.jsonl if not found we use the example_training
 """
 import logging
 import time
-from openai import OpenAI
 import os
 from backend import OPENAI_API_KEY, AI_MODEL, OPENAI_CLIENT
 

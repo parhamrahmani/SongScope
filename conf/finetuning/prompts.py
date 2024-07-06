@@ -9,7 +9,6 @@ Use the output (prompts.jsonl) in the finetuning.py or in the OpenAI interface t
 
 """
 import logging
-import uuid
 
 from conf.mongodb import query
 from conf import MONGODB_CLIENT, DB_NAME
