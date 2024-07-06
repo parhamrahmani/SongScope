@@ -14,6 +14,7 @@ from conf.mongodb import query
 from conf import MONGODB_CLIENT, DB_NAME
 import json
 from collections import defaultdict
+from backend import SYSTEM_PROMPT
 
 
 def recommendations_to_prompts(query_result):
@@ -41,12 +42,7 @@ def recommendations_to_prompts(query_result):
     grouped_tracks = dict(tracks)
 
     # Create prompts based on the grouped tracks
-    system_prompt = ("You are a music critic, recommend songs based on the user's input and demand"
-                     "In the following prompts, the first number is the target acousticness, the second number is the target instrumentalness,"
-                     "the third number is the target popularity, and the fourth number is the target tempo."
-                     "These weights are an example how a user may request a recommendation"
-                     "based on its acousticness, instrumentalness, popularity, and tempo."
-                     "But if not, ask the user for more information.")
+    system_prompt = SYSTEM_PROMPT
     prompts = []
 
     for weights, songs in grouped_tracks.items():
