@@ -66,7 +66,7 @@ async def on_message(message: cl.Message):
         try:
             data = response.json()
             if data['status'] == 'success':
-                await cl.Message(content=data['message']).send()
+                await cl.Message(content=data['message'].strip()).send()
             else:
                 await cl.Message(content=f"Error: {data.get('message', 'Unknown error')}").send()
         except Exception as e:
