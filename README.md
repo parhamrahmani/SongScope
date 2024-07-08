@@ -47,7 +47,7 @@ We will be using MongoDB as our database, Nginx for our web server configuration
 
 The details will follow in the installation section. However, install these before starting with the project setup.
 
-## Project Setup - Debian GNU/Linux 12 (bookworm)
+## Project Setup - Debian GNU/Linux 12 (Bookworm)
 ### 1. Clone the repository
 ```git
 git clone https://github.com/parhamrahmani/SongScope.git
@@ -121,7 +121,7 @@ sudo systemctl start mongod
 ```bash
 sudo systemctl status mongod
 ```
-- Go to the conf/mongodb directory and run the mongodb_initial_setup.py to set up the MongoDB databases.
+- Go to the `setup` directory and run the `mongodb_initial_setup.py` to set up the MongoDB databases.
 - After running the script, the databases will be set up and the collections will be populated with *example data*.
 - Delete the example data from the collections, since it will be populated with your own data later.
 - list of collections in the spotifydb database:
@@ -134,9 +134,8 @@ sudo systemctl status mongod
     - recommendations
         - the songs that the Spotify recommendation system has recommended to the user.
         - it originates from when the `/recommendations` and `/generate_random_recommendations/<int:num_recommendations> `are called, and it will be saved in the database.
-        
-~~### 5. Set up ChromaDB (DEPRECATED)~~
-### 6. Populate the MongoDB databases with your spotify data 
+
+### 5. Populate the MongoDB databases with your spotify data 
 - Run this endpoint to populate the mongodb collections with your spotify data.
 ```bash
 http://localhost:5000/liked_songs
@@ -146,7 +145,7 @@ http://localhost:5000/liked_songs
 - experiment with the Spotify recommendation system using the `localhost:5000/generate_random_recommendations/<int:num_recommendations>` to get random recommendations to populate the table for using it for fine-tuning.
 - pay attention to the `num_recommendations` parameter to get the desired number of recommendations. There are rate limits for the Spotify API.
 
-### 7. Fine-Tuning (Optional)
+### 6. Fine-Tuning (Optional)
 **Fine-tuning is an optional step**
 
 - You can fine-tune the recommendation system by using the recommendations table in the database.
@@ -156,15 +155,16 @@ http://localhost:5000/liked_songs
 - Then run the `conf/finetuning/finetuning.py` to fine-tune the model based on the prompts generated.
    - this will upload `conf/finetuning/prompts.jsonl` to the OpenAI API and will fine-tune the model based on the prompts.
 - **You can do this in OPENAI API Dashboard in their website as well if you want to do this with a gui environment**
-### 8. Set up OpenAI Assistant 
-- Go to the OpenAI API Dashboard and create a new assistant or use the script in the project to create a new assistant.
+### 7. Set up OpenAI Assistant 
+- Go to `setup/setup_openai_assistant.py` and run the script to create/update a new assistant.
 - Get the assistant ID and set it as the `OPEN_AI_ASSISTANT_ID` in the `.env` file.
 - Make sure to include the functions that you need in the assistant. Otherwise, the assistant won't work properly.
-- You have to get the assistant ID from the OpenAI API Dashboard regardless of how you create the assistant.
-### 9. Get Tavily API Key
+- You have to get the assistant ID from the OpenAI API Dashboard regardless of how you create the assistant. The 
+Assistant ID will be also printed in the terminal after creating the assistant.
+### 8. Get Tavily API Key
 - Go to the Tavily API website and get your own API key.
 - Set the API key as the `TAVILY_KEY` in the `.env` file.
-### 10. Set up the `.env` file
+### 9. Set up the `.env` file
 - Create a new `.env` file in the root directory of the project.
 - Add the following environment variables to the `.env` file.
 ```env
@@ -181,7 +181,7 @@ TAVILY_KEY=<YOUR_TAVILY_KEY>
 ```
 ### Additional Information
 - This setup is done on a linux machine. You can set up the project on a Windows machine as well. For windows, you can use WSL or easily go to each requirement documentation and follow the instructions.
-
+- Please use this locally and don't deploy the project online without proper security measures. This project is not production-ready and is not secure. 
 ## Running the project
 ### Start Nginx Service
 - start
@@ -216,8 +216,8 @@ python main.py
  * Running on http://127.0.0.1:5000
 2024-07-01 02:27:48 - Press CTRL+C to quit
 ```
-- The application will be running on `http://localhost:5000`
-- After authorization, you should be redirected to localhost:8000 to chat with the chatbot.
+- The application will be running on ´http://localhost:5000´
+- After authorization, you should be redirected to `http://localhost:8000` to chat with the chatbot.
 - At this point a new chainlit server will be started you should expect the following output
 ```bash
 Starting Chainlit server
