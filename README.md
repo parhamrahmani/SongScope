@@ -1,5 +1,5 @@
 # SongScope 
-In this project, i experimented with integrating a web app to Spotify API and OpenAI API for music recommendation. For more info and results click on [this](#final-note). 
+In this project, i experimented with integrating a web app to Spotify API and OpenAI API for music recommendation. For more info and results click on [this](##final-and-personal-notes). 
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -7,6 +7,8 @@ In this project, i experimented with integrating a web app to Spotify API and Op
 3. [Project Setup](#project-setup-debian-gnulinux-12)
 4. [Running the Project](#running-the-project)
 5. [Additional Information](#additional-information)
+6. [Final and Personal Notes](#final-and-personal-notes)
+7. [Support](#support)
 
 ## Introduction
 
